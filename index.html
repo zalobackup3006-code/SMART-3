@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hệ Thống Bài Tập Tương Tác</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --accent: #FFE66D;
+            --bg-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --text-dark: #2D3436;
+            --text-light: #FFFFFF;
+            --success: #2ECC71;
+            --danger: #E74C3C;
+            --white: #FFFFFF;
+            --shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Tắt cuộn trang tổng thể, quản lý cuộn từng phần */
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* --- LOGIN SCREEN --- */
+        .login-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            border: 4px solid var(--white);
+        }
+
+        .login-box h1 {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            border: 3px solid #eee;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: 0.3s;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .login-box input:focus {
+            border-color: var(--secondary);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 5px 0 #c0392b;
+            text-transform: uppercase;
+            width: 100%;
+        }
+
+        .btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 0 0 #c0392b;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            box-shadow: 0 5px 0 #16a085;
+        }
+        
+        .btn-secondary:active {
+            box-shadow: 0 0 0 #16a085;
+        }
+
+        /* --- APP SCREEN --- */
+        .header {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        .student-info {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .progress-container {
+            flex-grow: 1;
+            margin: 0 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            height: 15px;
+            background: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .nav-dropdown {
+            position: relative;
+        }
+
+        .nav-select {
+            appearance: none;
+            background: var(--accent);
+            border: 2px solid #e1c84c;
+            padding: 10px 40px 10px 15px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--text-dark);
+            outline: none;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--white);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .instruction-block {
+            background: var(--secondary);
+            color: var(--white);
+            padding: 20px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .question-scroll-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .question-text {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 25px;
+            text-align: center;
+            color: var(--text-dark);
+        }
+
+        /* Question Types */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            background: #f8f9fa;
+            border: 3px solid #dee2e6;
+            padding: 15px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .option-btn:hover {
+            background: #e9ecef;
+            transform: scale(1.02);
+        }
+
+        .option-btn.selected {
+            background: var(--accent);
+            border-color: #f1c40f;
+        }
+
+        .fill-input {
+            width: 100%;
+            font-size: 2rem;
+            padding: 15px;
+            text-align: center;
+            border: 4px dashed var(--secondary);
+            border-radius: 15px;
+            outline: none;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .reorder-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .word-bank, .answer-bank {
+            min-height: 80px;
+            border: 3px solid #eee;
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            background: #fafafa;
+        }
+
+        .answer-bank {
+            border-color: var(--secondary);
+            background: #e8f8f5;
+        }
+
+        .word-pill {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #c0392b;
+            user-select: none;
+        }
+        .word-pill:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .theory-block {
+            margin-top: auto;
+            background: #FFF9C4;
+            padding: 15px;
+            border-radius: 15px;
+            border-left: 5px solid #FBC02D;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            background: #f8f9fa;
+            border-top: 2px solid #eee;
+            flex-shrink: 0;
+        }
+
+        /* --- POPUPS --- */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .popup {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            transform: scale(0.5);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .overlay.show { display: flex; }
+        .overlay.show .popup { transform: scale(1); }
+
+        .popup.correct { border: 8px solid var(--success); }
+        .popup.wrong { border: 8px solid var(--danger); }
+
+        .popup-icon { font-size: 5rem; margin-bottom: 10px; }
+        .popup-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 15px; }
+        .correct .popup-title { color: var(--success); }
+        .wrong .popup-title { color: var(--danger); }
+        
+        .popup-message { font-size: 1.3rem; margin-bottom: 25px; line-height: 1.5; font-weight: bold;}
+
+        /* --- RESULT SCREEN --- */
+        .result-container {
+            background: white;
+            width: 100%;
+            max-width: 1000px;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #eee;
+        }
+
+        .stat-card h3 { font-size: 1.2rem; color: #555; }
+        .stat-card p { font-size: 2.5rem; font-weight: 900; color: var(--primary); }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .result-table th, .result-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            font-size: 1.1rem;
+        }
+
+        .result-table th { background: var(--secondary); color: white; font-weight: bold; }
+        .text-danger { color: var(--danger); font-weight: bold;}
+        .text-success { color: var(--success); font-weight: bold;}
+
+        @media (max-width: 768px) {
+            .options-grid { grid-template-columns: 1fr; }
+            .header { flex-direction: column; gap: 10px; }
+            .nav-dropdown { width: 100%; }
+            .nav-select { width: 100%; }
+            .question-text { font-size: 1.5rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MÀN HÌNH ĐĂNG NHẬP -->
+    <div class="screen active" id="screen-login">
+        <div class="login-box">
+            <h1>🌟 Bắt đầu làm bài 🌟</h1>
+            <p style="margin-bottom: 20px; font-weight: bold; color: #555;">Vui lòng nhập tên của con để giáo viên chấm điểm nhé!</p>
+            <input type="text" id="studentName" placeholder="Nhập tên học sinh..." autocomplete="off">
+            <button class="btn" onclick="startApp()">Vào làm bài ngay!</button>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH LÀM BÀI -->
+    <div class="screen" id="screen-app">
+        <div class="header">
+            <div class="student-info" id="display-name">👨‍🎓 Học sinh: </div>
+            <div class="progress-container">
+                <div id="progress-text">Tiến độ: 0/50</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+            <div class="nav-dropdown">
+                <select class="nav-select" id="question-nav" onchange="jumpToQuestion(this.value)"></select>
+            </div>
+        </div>
+
+        <div class="main-container">
+            <div class="instruction-block" id="ui-instruction"></div>
+            
+            <div class="question-scroll-area">
+                <div class="question-text" id="ui-question"></div>
+                
+                <!-- Khu vực tương tác (sẽ được inject bằng JS) -->
+                <div id="ui-interaction"></div>
+                
+                <div class="theory-block" id="ui-theory">
+                    💡 <b>Gợi ý lý thuyết:</b> <span id="theory-text"></span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" id="btn-submit" onclick="checkAnswer()">Kiểm tra đáp án ✅</button>
+                <button class="btn btn-secondary" id="btn-next" onclick="nextQuestion()" style="display: none;">Câu tiếp theo ➡️</button>
+                <button class="btn btn-secondary" id="btn-report" onclick="showReport()" style="display: none; background: #9b59b6; box-shadow: 0 5px 0 #8e44ad;">Xem Báo Cáo 📊</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH BÁO CÁO -->
+    <div class="screen" id="screen-result">
+        <div class="result-container">
+            <h1 style="text-align: center; color: var(--primary); font-size: 2.5rem; margin-bottom: 10px;">🎉 HOÀN THÀNH BÀI TẬP 🎉</h1>
+            <h2 style="text-align: center; color: #555;" id="report-name"></h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Tổng số câu đã làm</h3>
+                    <p id="stat-total">50/50</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Làm đúng ngay lần đầu 🎯</h3>
+                    <p id="stat-first-try" style="color: var(--success)">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Cần xem lại (Sai ≥ 1 lần) 📖</h3>
+                    <p id="stat-wrong" style="color: var(--danger)">0</p>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 10px;">Chi tiết bài làm:</h3>
+            <div style="overflow-x: auto;">
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Câu hỏi gốc</th>
+                            <th>Đáp án sai đã chọn</th>
+                            <th>Đáp án Đúng</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-table-body">
+                        <!-- Render bằng JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP PHẢN HỒI -->
+    <div class="overlay" id="popup-overlay">
+        <div class="popup" id="popup-box">
+            <div class="popup-icon" id="popup-icon">✅</div>
+            <h2 class="popup-title" id="popup-title">Tuyệt vời!</h2>
+            <p class="popup-message" id="popup-message">Bạn đã làm rất tốt.</p>
+            <button class="btn" onclick="closePopup()" id="popup-btn">Tiếp tục</button>
+        </div>
+    </div>
+
+    <script>
+        /* ================= BỘ DỮ LIỆU CÂU HỎI (100% GỐC TỪ PDF) ================= */
+        const questionsData = [
+            // EXERCISE I: ODD ONE OUT (1-15)
+            { id: 1, section: "I. Odd one out", instruction: "Chọn từ khác loại với các từ còn lại.", type: "mcq", question: "1. A. pajamas | B. shirt | C. pants | D. socks", options: ["pajamas", "shirt", "pants", "socks"], correct: "shirt", theory: "Pajamas, pants, socks luôn đi ở dạng số nhiều (có 's'). Shirt là danh từ số ít.", explanation: "Shirt là từ số ít, các từ còn lại luôn ở số nhiều." },
+            { id: 2, section: "I. Odd one out", instruction: "Chọn từ khác loại với các từ còn lại.", type: "mcq", question: "2. A. soccer | B. basketball | C. throwing | D. badminton", options: ["soccer", "basketball", "throwing", "badminton"], correct: "throwing", theory: "Soccer, basketball, badminton là tên các môn thể thao. Throwing (ném) là một hành động.", explanation: "Throwing là động từ chỉ hành động, các từ kia là tên môn thể thao." },
+            { id: 3, section: "I. Odd one out", instruction: "Chọn từ khác loại với các từ còn lại.", type: "mcq", question: "3. A. go skiing | B. playing | C. go swimming | D. go jogging", options: ["go skiing", "playing", "go swimming", "go jogging"], correct: "playing", theory: "Các hoạt động thể thao ngoài trời thường dùng cụm 'go + V-ing'. 'Playing' đứng một mình không theo cấu trúc này.", explanation: "Cần chọn playing vì các từ còn lại đều bắt đầu bằng chữ 'go'." },
+            { id: 4, section: "I. Odd one out", instruction: "Chọn từ khác loại với các từ còn lại.", type: "mcq", question: "4. A. red | B. blue | C. black | D. color", options: ["red", "blue", "black", "color"], correct: "color", theory: "Red, blue, black là các tính từ chỉ màu sắc cụ thể. Color là danh từ mang nghĩa 'màu sắc' chung.", explanation: "Color là từ chỉ chung, các từ kia là tên các màu sắc cụ thể." },
+            { id: 5, section: "I. Odd one out", instruction: "Chọn từ khác loại với các từ còn lại.", type: "mcq", question: "5. A. stand | B. sing | C. dance | D. play", options: ["stand", "sing", "dance", "play"], correct: "stand", theory: "Sing, dance, play là các hành động có tính giải trí/nghệ thuật. Stand chỉ là trạng thái đứng yên.", explanation: "Stand (đứng) là trạng thái tĩnh, các từ kia là hoạt động vui chơi." },
+            { id: 6, section: "I. Odd one out", instruction: "Chọn từ khác loại với các từ còn lại.", type: "mcq", question: "6. A. polo | B. socks | C. shirt | D. cap", options: ["polo", "socks", "shirt", "cap"], correct: "socks", theory: "Socks là danh từ số nhiều (đôi tất). Các từ còn lại là đồ mặc số ít.", explanation: "Socks là số nhiều, các từ còn lại số ít." },
+            { id: 7, section: "I. Odd one out", instruction: "Chọn từ khác loại với các từ còn lại.", type: "mcq", question: "7. A. dress | B. cap | C. skirt | D. shoes", options: ["dress", "cap", "skirt", "shoes"], correct: "shoes", theory: "Shoes là danh từ số nhiều (đôi giày). Các từ còn lại là trang phục số ít.", explanation: "Shoes luôn ở dạng số nhiều (có s), các từ còn lại số ít." },
+            { id: 8, section: "I. Odd one out", instruction: "Chọn từ khác loại với các từ còn lại.", type: "mcq", question: "8. A. marbles | B. card | C. robot | D. doll", options: ["marbles", "card", "robot", "doll"], correct: "marbles", theory: "Marbles (những viên bi) là danh từ số nhiều. Card, robot, doll là danh từ số ít.", explanation: "Marbles có đuôi 's' chỉ số nhiều, các từ khác là đồ chơi số ít." },
+            { id: 9, section: "I. Odd one out", instruction: "Chọn từ khác loại với các từ còn lại.", type: "mcq", question: "9. A. stand | B. sing | C. dance | D. play", options: ["stand", "sing", "dance", "play"], correct: "stand", theory: "Tương tự câu số 5, 'stand' là trạng thái tĩnh.", explanation: "Stand là trạng thái tĩnh." },
+            { id: 10, section: "I. Odd one out", instruction: "Chọn từ khác loại với các từ còn lại.", type: "mcq", question: "10. A. polo | B. socks | C. shirt | D. cap", options: ["polo", "socks", "shirt", "cap"], correct: "socks", theory: "Tương tự câu số 6.", explanation: "Socks là danh từ số nhiều." },
+            { id: 11, section: "I. Odd one out", instruction: "Chọn từ khác loại với các từ còn lại.", type: "mcq", question: "11. A. hand | B. head | C. body | D. leg", options: ["hand", "head", "body", "leg"], correct: "body", theory: "Hand, head, leg là các BỘ PHẬN của cơ thể. Body là TOÀN BỘ cơ thể.", explanation: "Body nghĩa là cơ thể, các từ khác là tên các bộ phận nhỏ trên cơ thể." },
+            { id: 12, section: "I. Odd one out", instruction: "Chọn từ khác loại với các từ còn lại.", type: "mcq", question: "12. A. knifes | B. chopsticks | C. spoons | D. noodles", options: ["knifes", "chopsticks", "spoons", "noodles"], correct: "noodles", theory: "Knifes, chopsticks, spoons là dụng cụ dùng để ăn. Noodles (mì) là thức ăn.", explanation: "Noodles là món ăn, các từ khác là đồ dùng để ăn." },
+            { id: 13, section: "I. Odd one out", instruction: "Chọn từ khác loại với các từ còn lại.", type: "mcq", question: "13. A. hand | B. head | C. body | D. leg", options: ["hand", "head", "body", "leg"], correct: "body", theory: "Tương tự câu số 11.", explanation: "Body mang nghĩa toàn bộ cơ thể." },
+            { id: 14, section: "I. Odd one out", instruction: "Chọn từ khác loại với các từ còn lại.", type: "mcq", question: "14. A. pajamas | B. shirt | C. pants | D. socks", options: ["pajamas", "shirt", "pants", "socks"], correct: "shirt", theory: "Tương tự câu số 1.", explanation: "Shirt là danh từ số ít." },
+            { id: 15, section: "I. Odd one out", instruction: "Chọn từ khác loại với các từ còn lại.", type: "mcq", question: "15. A. fish | B. chicken | C. steak | D. ice cream", options: ["fish", "chicken", "steak", "ice cream"], correct: "ice cream", theory: "Fish, chicken, steak là món mặn (thịt/cá). Ice cream là món tráng miệng ngọt.", explanation: "Ice cream là đồ ngọt, các từ khác là món mặn." },
+
+            // EXERCISE III: CHOOSE THE CORRECT ANSWER (16-28)
+            { id: 16, section: "III. Choose the correct answer", instruction: "Chọn đáp án đúng nhất để hoàn thành câu.", type: "mcq", question: "1. Can you play soccer?", options: ["a. Yes, I do", "b. Yes, I can", "c. No, I can"], correct: "b. Yes, I can", theory: "Hỏi bằng 'Can you...?' thì trả lời phải là 'Yes, I can' hoặc 'No, I can't'.", explanation: "Trợ động từ ở câu hỏi là 'Can' nên câu trả lời phải dùng 'can'." },
+            { id: 17, section: "III. Choose the correct answer", instruction: "Chọn đáp án đúng nhất để hoàn thành câu.", type: "mcq", question: "2. What's your favorite sport?", options: ["a. I like badminton.", "b. It's ice-cream.", "c. I like throwing."], correct: "a. I like badminton.", theory: "Câu hỏi về môn thể thao yêu thích (favorite sport), cần trả lời tên môn thể thao.", explanation: "Badminton (cầu lông) là môn thể thao phù hợp với câu hỏi." },
+            { id: 18, section: "III. Choose the correct answer", instruction: "Chọn đáp án đúng nhất để hoàn thành câu.", type: "mcq", question: "3. What are you good at?", options: ["a. I like playing basketball.", "b. I like swimming.", "c. I'm good at kicking."], correct: "c. I'm good at kicking.", theory: "Hỏi 'What are you good at?' (Bạn giỏi việc gì) -> Trả lời 'I'm good at + V-ing'.", explanation: "Trả lời đúng cấu trúc I'm good at..." },
+            { id: 19, section: "III. Choose the correct answer", instruction: "Chọn đáp án đúng nhất để hoàn thành câu.", type: "mcq", question: "4. May I go skateboarding?", options: ["a. Yes, you may", "b. No, you can't", "c. Yes, I do"], correct: "a. Yes, you may", theory: "Hỏi xin phép 'May I...?' -> Trả lời đồng ý là 'Yes, you may'.", explanation: "Hỏi May I thì trả lời Yes, you may." },
+            { id: 20, section: "III. Choose the correct answer", instruction: "Chọn đáp án đúng nhất để hoàn thành câu.", type: "mcq", question: "5. I can …………….. the ball with my legs", options: ["a. head", "b. kick", "c. arms"], correct: "b. kick", theory: "Với đôi chân (legs), hành động tác động lên quả bóng là đá (kick).", explanation: "Kick (đá) là hành động thực hiện bằng chân (legs)." },
+            { id: 21, section: "III. Choose the correct answer", instruction: "Chọn đáp án đúng nhất để hoàn thành câu.", type: "mcq", question: "6. What do you want?", options: ["a. I'm wearing a shirt.", "b. I wants some socks.", "c. I want a cap."], correct: "c. I want a cap.", theory: "Hỏi 'What do you want?' -> Trả lời 'I want...'. Chú ý ngôi 'I' thì động từ 'want' không thêm 's'.", explanation: "Cấu trúc I want + đồ vật. (Câu b sai vì I wants có 's')." },
+            { id: 22, section: "III. Choose the correct answer", instruction: "Chọn đáp án đúng nhất để hoàn thành câu.", type: "mcq", question: "7. What are you wearing?", options: ["a. I'm wearing blue jeans.", "b. I'm wear blue pants.", "c. I wear blue pants."], correct: "a. I'm wearing blue jeans.", theory: "Hỏi thì hiện tại tiếp diễn 'What are you wearing?' -> Trả lời 'I am wearing...'.", explanation: "Đúng cấu trúc thì hiện tại tiếp diễn I am wearing..." },
+            { id: 23, section: "III. Choose the correct answer", instruction: "Chọn đáp án đúng nhất để hoàn thành câu.", type: "mcq", question: "8. ……………. three onions?", options: ["a. There", "b. Are there", "c. There are"], correct: "b. Are there", theory: "Đây là câu hỏi có dấu chấm hỏi (?), và 'three onions' là số nhiều -> dùng 'Are there'.", explanation: "Câu hỏi số nhiều phải đảo 'Are' lên đầu: Are there...?" },
+            { id: 24, section: "III. Choose the correct answer", instruction: "Chọn đáp án đúng nhất để hoàn thành câu.", type: "mcq", question: "9. I can see a…………", options: ["a. big car", "b. car big", "c. car is big"], correct: "a. big car", theory: "Tính từ miêu tả (big) phải đứng trước danh từ (car).", explanation: "Tính từ đứng trước danh từ: big car (xe to)." },
+            { id: 25, section: "III. Choose the correct answer", instruction: "Chọn đáp án đúng nhất để hoàn thành câu.", type: "mcq", question: "10. Is this your cap?", options: ["a. Yes, it is.", "b. No, they aren't.", "c. Yes, it does."], correct: "a. Yes, it is.", theory: "Hỏi 'Is this...' (số ít) -> Trả lời 'Yes, it is' hoặc 'No, it isn't'.", explanation: "Chủ ngữ số ít 'this' trả lời bằng 'it is'." },
+            { id: 26, section: "III. Choose the correct answer", instruction: "Chọn đáp án đúng nhất để hoàn thành câu.", type: "mcq", question: "11. Are these your shoes?", options: ["a. Yes, it is", "b. No, it isn't", "c. No, they aren't"], correct: "c. No, they aren't", theory: "Hỏi 'Are these...' (số nhiều) -> Trả lời 'Yes, they are' hoặc 'No, they aren't'.", explanation: "Shoes (giày) là số nhiều, trả lời phải dùng 'they aren't'." },
+            { id: 27, section: "III. Choose the correct answer", instruction: "Chọn đáp án đúng nhất để hoàn thành câu.", type: "mcq", question: "12. Are you wearing a white polo?", options: ["a. Yes, I am", "b. Yes, you are", "c. No, you aren't"], correct: "a. Yes, I am", theory: "Hỏi 'Are you...' (Bạn có đang...) -> Trả lời 'Yes, I am' (Vâng, tôi đang).", explanation: "Người ta hỏi 'bạn' thì mình phải xưng 'tôi' (I am)." },
+            { id: 28, section: "III. Choose the correct answer", instruction: "Chọn đáp án đúng nhất để hoàn thành câu.", type: "mcq", question: "13. Seven plus eleven is …………..", options: ["a. seventeen.", "b. eighteen.", "c. nineteen."], correct: "b. eighteen.", theory: "Toán học: 7 (Seven) + 11 (eleven) = 18 (eighteen).", explanation: "7 cộng 11 bằng 18 (eighteen)." },
+
+            // EXERCISE IV: FIND MISTAKES (29-40) - Đổi thành Fill-in the blank sửa lỗi
+            { id: 29, section: "IV. Find the mistakes and correct", instruction: "Nhập TỪ ĐÚNG để thay thế cho từ bị sai trong câu.", type: "fill", question: "1. What does she <b>wants</b>? - She wants a pink hat.", correct: "want", theory: "Trong câu hỏi có trợ động từ 'does', động từ chính phải giữ nguyên thể không thêm 's'.", explanation: "wants sai, sửa thành want vì đã có does." },
+            { id: 30, section: "IV. Find the mistakes and correct", instruction: "Nhập TỪ ĐÚNG để thay thế cho từ bị sai trong câu.", type: "fill", question: "2. Can you <b>playing</b> soccer? – Yes, I can", correct: "play", theory: "Sau 'Can' động từ luôn ở dạng nguyên thể, không thêm đuôi -ing.", explanation: "playing sai, sửa thành play." },
+            { id: 31, section: "IV. Find the mistakes and correct", instruction: "Nhập TỪ ĐÚNG để thay thế cho từ bị sai trong câu.", type: "fill", question: "3. <b>Where</b> are you good at? - hitting", correct: "What", theory: "Hỏi bạn giỏi cái gì dùng 'What are you good at?'. Where là hỏi ở đâu.", explanation: "Where sai, sửa thành What." },
+            { id: 32, section: "IV. Find the mistakes and correct", instruction: "Nhập TỪ ĐÚNG để thay thế cho từ bị sai trong câu.", type: "fill", question: "4. How many <b>marble</b> do you have?", correct: "marbles", theory: "Sau 'How many' danh từ đếm được luôn phải ở dạng số nhiều (thêm 's').", explanation: "marble sai, sửa thành số nhiều marbles." },
+            { id: 33, section: "IV. Find the mistakes and correct", instruction: "Nhập TỪ ĐÚNG để thay thế cho từ bị sai trong phép toán.", type: "fill", question: "5. Twenty minus six is <b>fifteen</b>", correct: "fourteen", theory: "20 (Twenty) - 6 (six) = 14 (fourteen).", explanation: "fifteen là 15 (sai), đáp án toán đúng là 14 (fourteen)." },
+            { id: 34, section: "IV. Find the mistakes and correct", instruction: "Nhập TỪ ĐÚNG để thay thế cho từ bị sai trong câu.", type: "fill", question: "6. <b>Push</b> the doll on the chair.", correct: "Put", theory: "Để/đặt món đồ lên ghế dùng động từ 'Put'. 'Push' nghĩa là đẩy.", explanation: "Push sai, sửa thành Put (đặt, để)." },
+            { id: 35, section: "IV. Find the mistakes and correct", instruction: "Nhập TỪ ĐÚNG để thay thế cho từ bị sai trong câu.", type: "fill", question: "7. What are you <b>wear</b>? -> I’m wearing uniform.", correct: "wearing", theory: "Cấu trúc hiện tại tiếp diễn: What + are/is + S + V-ing?", explanation: "wear sai, phải thêm -ing thành wearing." },
+            { id: 36, section: "IV. Find the mistakes and correct", instruction: "Nhập TỪ ĐÚNG để thay thế cho từ bị sai trong câu.", type: "fill", question: "8. <b>Does</b> he good at kicking? – No, he isn’t", correct: "Is", theory: "Đi với tính từ 'good at' cần dùng động từ to be (Is/Are), không dùng trợ động từ Does.", explanation: "Does sai, sửa thành Is vì có từ 'isn't' ở câu trả lời." },
+            { id: 37, section: "IV. Find the mistakes and correct", instruction: "Nhập TỪ ĐÚNG để thay thế cho từ bị sai trong câu.", type: "fill", question: "9. <b>Are</b> she wearing a yellow dress? – Yes, she is", correct: "Is", theory: "Chủ ngữ là 'she' (số ít) nên to be ở đầu câu hỏi phải là 'Is'.", explanation: "Are sai, đi với she phải dùng Is." },
+            { id: 38, section: "IV. Find the mistakes and correct", instruction: "Nhập TỪ ĐÚNG để thay thế cho từ bị sai trong câu.", type: "fill", question: "10. What’s your favorite <b>sports</b>? – I like badminton.", correct: "sport", theory: "Chủ ngữ 'What is' (What's) hỏi về 1 thứ số ít. Trả lời cũng chỉ có 1 môn (badminton).", explanation: "sports sai, bỏ s thành sport (số ít)." },
+            { id: 39, section: "IV. Find the mistakes and correct", instruction: "Nhập TỪ ĐÚNG để thay thế cho từ bị sai trong câu.", type: "fill", question: "11. Are these your <b>boot</b>? – Yes, they are.", correct: "boots", theory: "Đi với 'Are these' (số nhiều), danh từ phải ở dạng số nhiều (boots).", explanation: "boot sai, phải thêm s thành boots." },
+            { id: 40, section: "IV. Find the mistakes and correct", instruction: "Nhập TỪ ĐÚNG để thay thế cho từ bị sai trong câu.", type: "fill", question: "12. I <b>can</b> use my arms in soccer.", correct: "can't", theory: "Luật bóng đá: Không được phép dùng tay (arms/hands), ngoại trừ thủ môn.", explanation: "Trong bóng đá không được dùng tay, sửa 'can' thành 'can't' (không thể)." },
+
+            // EXERCISE VI: REORDER (41-50)
+            { id: 41, section: "VI. Reorder the words", instruction: "Bấm vào các từ để sắp xếp thành câu hoàn chỉnh.", type: "reorder", words: ["wearing", "pink", "I'm", "a", "dress", "and", "black", "shoes"], correct: "I'm wearing a pink dress and black shoes", theory: "Cấu trúc: I'm wearing + a/an + màu sắc + quần áo.", explanation: "Tôi đang mặc một chiếc váy hồng và đôi giày đen." },
+            { id: 42, section: "VI. Reorder the words", instruction: "Bấm vào các từ để sắp xếp thành câu hoàn chỉnh.", type: "reorder", words: ["The", "can", "catch", "ball", "goalie", "the"], correct: "The goalie can catch the ball", theory: "Chủ ngữ (The goalie) + can + động từ (catch) + tân ngữ (the ball).", explanation: "Thủ môn có thể bắt quả bóng." },
+            { id: 43, section: "VI. Reorder the words", instruction: "Bấm vào các từ để sắp xếp thành câu hoàn chỉnh.", type: "reorder", words: ["sport", "favorite", "What's", "your"], correct: "What's your favorite sport", theory: "Cấu trúc hỏi sở thích: What's your favorite + danh từ?", explanation: "Môn thể thao yêu thích của bạn là gì?" },
+            { id: 44, section: "VI. Reorder the words", instruction: "Bấm vào các từ để sắp xếp thành câu hoàn chỉnh.", type: "reorder", words: ["basketball", "like", "I", "but", "good at", "I'm not", "playing it"], correct: "I like basketball but I'm not good at playing it", theory: "Vế 1 (Tôi thích...) + but (nhưng) + Vế 2 (Tôi không giỏi...).", explanation: "Tôi thích bóng rổ nhưng tôi không chơi giỏi." },
+            { id: 45, section: "VI. Reorder the words", instruction: "Bấm vào các từ để sắp xếp thành câu hoàn chỉnh.", type: "reorder", words: ["blue jeans", "an", "I'm", "and", "wearing", "sweater", "orange"], correct: "I'm wearing an orange sweater and blue jeans", theory: "Chú ý mạo từ 'an' đi trước nguyên âm 'orange'.", explanation: "Tôi đang mặc một chiếc áo len cam và quần jean xanh." },
+            { id: 46, section: "VI. Reorder the words", instruction: "Bấm vào các từ để sắp xếp thành câu hoàn chỉnh.", type: "reorder", words: ["are", "What", "you", "wearing"], correct: "What are you wearing", theory: "Từ để hỏi (What) + to be (are) + S (you) + V-ing?", explanation: "Bạn đang mặc trang phục gì?" },
+            { id: 47, section: "VI. Reorder the words", instruction: "Bấm vào các từ để sắp xếp thành câu hoàn chỉnh.", type: "reorder", words: ["ice cream", "like", "some", "you", "Would"], correct: "Would you like some ice cream", theory: "Cấu trúc mời mọc lịch sự: Would you like + some + đồ ăn/thức uống?", explanation: "Bạn có muốn ăn một chút kem không?" },
+            { id: 48, section: "VI. Reorder the words", instruction: "Bấm vào các từ để sắp xếp thành câu hoàn chỉnh.", type: "reorder", words: ["the", "can", "In soccer", "goalie", "catch", "the ball", "and", "throw"], correct: "In soccer the goalie can catch and throw the ball", theory: "Cụm chỉ nơi chốn (In soccer) đứng đầu. Sau 'can' là 2 động từ nối bằng 'and'. (Có thể xếp catch the ball and throw hoặc catch and throw the ball đều đúng logic, nhưng ưu tiên gộp động từ).", explanation: "Trong bóng đá, thủ môn có thể bắt và ném bóng." },
+            { id: 49, section: "VI. Reorder the words", instruction: "Bấm vào các từ để sắp xếp thành câu hoàn chỉnh.", type: "reorder", words: ["Put", "robot", "the", "toy box", "the", "in"], correct: "Put the robot in the toy box", theory: "Động từ (Put) + món đồ (the robot) + vị trí (in the toy box).", explanation: "Hãy cất người máy vào trong hộp đồ chơi." },
+            { id: 50, section: "VI. Reorder the words", instruction: "Bấm vào các từ để sắp xếp thành câu hoàn chỉnh.", type: "reorder", words: ["eat", "with", "noodles", "chopsticks", "We"], correct: "We eat noodles with chopsticks", theory: "Chủ ngữ (We) + động từ (eat) + món ăn (noodles) + bằng công cụ gì (with chopsticks).", explanation: "Chúng tôi ăn mì bằng đũa." }
+        ];
+
+        /* ================= BIẾN TRẠNG THÁI ================= */
+        let studentName = "";
+        let currentIndex = 0;
+        
+        // Mảng chứa trạng thái từng câu: 'unanswered', 'correct_first_try', 'correct_retry'
+        let progressData = new Array(questionsData.length).fill('unanswered');
+        
+        // Object lưu các câu trả lời sai: { 0: ["shirt", "pants"], 1: ["basketball"] }
+        let wrongAttemptsData = {};
+
+        /* ================= KHỞI TẠO HỆ THỐNG ================= */
+        function startApp() {
+            const nameInput = document.getElementById('studentName').value.trim();
+            if (nameInput === "") {
+                alert("Con quên nhập tên rồi kìa!");
+                return;
+            }
+            studentName = nameInput;
+            document.getElementById('display-name').innerText = `👨‍🎓 Học sinh: ${studentName}`;
+            
+            // Chuyển màn hình
+            document.getElementById('screen-login').classList.remove('active');
+            document.getElementById('screen-app').classList.add('active');
+
+            initDropdown();
+            renderQuestion(currentIndex);
+        }
+
+        function initDropdown() {
+            const select = document.getElementById('question-nav');
+            select.innerHTML = '';
+            questionsData.forEach((q, index) => {
+                const opt = document.createElement('option');
+                opt.value = index;
+                opt.innerText = `Câu ${index + 1}`;
+                select.appendChild(opt);
+            });
+        }
+
+        function updateProgressUI() {
+            // Thanh tiến độ
+            const completedCount = progressData.filter(p => p !== 'unanswered').length;
+            document.getElementById('progress-text').innerText = `Tiến độ: ${completedCount}/${questionsData.length}`;
+            document.getElementById('progress-fill').style.width = `${(completedCount / questionsData.length) * 100}%`;
+
+            // Cập nhật Dropdown (Thêm ✅)
+            const select = document.getElementById('question-nav');
+            Array.from(select.options).forEach((opt, index) => {
+                let text = `Câu ${index + 1}`;
+                if (progressData[index] !== 'unanswered') {
+                    text += " ✅";
+                }
+                opt.innerText = text;
+            });
+            select.value = currentIndex; // sync with current view
+
+            // Nút "Xem Báo Cáo"
+            if (completedCount === questionsData.length) {
+                document.getElementById('btn-report').style.display = 'block';
+                document.getElementById('btn-next').style.display = 'none';
+                document.getElementById('btn-submit').style.display = 'none';
+            }
+        }
+
+        /* ================= RENDER CÂU HỎI ================= */
+        let selectedOption = ""; // Dùng cho MCQ
+        let reorderSelectedWords = []; // Dùng cho Reorder
+        let reorderAvailableWords = []; 
+
+        function renderQuestion(index) {
+            const q = questionsData[index];
+            currentIndex = index;
+            
+            // Cập nhật UI chung
+            document.getElementById('ui-instruction').innerText = q.section + " - " + q.instruction;
+            
+            // Xử lý hiển thị HTML cho câu hỏi (in đậm lỗi sai ở dạng Fill)
+            document.getElementById('ui-question').innerHTML = q.question || ""; 
+            if(q.type === 'reorder') document.getElementById('ui-question').innerHTML = `Câu ${index+1}:`;
+
+            document.getElementById('theory-text').innerText = q.theory;
+            
+            const interactionDiv = document.getElementById('ui-interaction');
+            interactionDiv.innerHTML = '';
+            
+            // Nút điều khiển
+            document.getElementById('btn-submit').style.display = progressData[index] === 'unanswered' ? 'block' : 'none';
+            document.getElementById('btn-next').style.display = progressData[index] === 'unanswered' ? 'none' : 'block';
+
+            // Sinh UI theo loại câu hỏi
+            if (q.type === 'mcq') {
+                selectedOption = "";
+                const grid = document.createElement('div');
+                grid.className = 'options-grid';
+                
+                q.options.forEach(opt => {
+                    const btn = document.createElement('div');
+                    btn.className = 'option-btn';
+                    btn.innerText = opt;
+                    if(progressData[index] !== 'unanswered') {
+                        // Nếu đã làm đúng, highlight đáp án đúng, khoá click
+                        if(opt === q.correct) btn.classList.add('selected');
+                        btn.style.cursor = 'not-allowed';
+                    } else {
+                        btn.onclick = () => {
+                            document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                            btn.classList.add('selected');
+                            selectedOption = opt;
+                        };
+                    }
+                    grid.appendChild(btn);
+                });
+                interactionDiv.appendChild(grid);
+            } 
+            else if (q.type === 'fill') {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'fill-input';
+                input.placeholder = "Nhập từ đúng vào đây...";
+                input.autocomplete = "off";
+                input.id = "fill-answer-input";
+                
+                if(progressData[index] !== 'unanswered') {
+                    input.value = q.correct;
+                    input.disabled = true;
+                    input.style.borderColor = "var(--success)";
+                }
+                interactionDiv.appendChild(input);
+            }
+            else if (q.type === 'reorder') {
+                if(progressData[index] !== 'unanswered') {
+                    // Đã làm xong
+                    const ansBox = document.createElement('div');
+                    ansBox.className = 'answer-bank';
+                    ansBox.style.borderColor = "var(--success)";
+                    q.correct.split(" ").forEach(w => {
+                        const wDiv = document.createElement('div');
+                        wDiv.className = 'word-pill';
+                        wDiv.style.cursor = 'default';
+                        wDiv.innerText = w;
+                        ansBox.appendChild(wDiv);
+                    });
+                    interactionDiv.appendChild(ansBox);
+                } else {
+                    // Chưa làm
+                    // Trộn từ
+                    reorderAvailableWords = [...q.words].sort(() => Math.random() - 0.5);
+                    reorderSelectedWords = [];
+                    renderReorderUI(interactionDiv);
+                }
+            }
+
+            updateProgressUI();
+        }
+
+        function renderReorderUI(container) {
+            container.innerHTML = '';
+            const wrap = document.createElement('div');
+            wrap.className = 'reorder-container';
+
+            const answerBank = document.createElement('div');
+            answerBank.className = 'answer-bank';
+            reorderSelectedWords.forEach((w, i) => {
+                const pill = document.createElement('div');
+                pill.className = 'word-pill';
+                pill.innerText = w;
+                pill.onclick = () => {
+                    reorderSelectedWords.splice(i, 1);
+                    reorderAvailableWords.push(w);
+                    renderReorderUI(container);
+                };
+                answerBank.appendChild(pill);
+            });
+
+            const wordBank = document.createElement('div');
+            wordBank.className = 'word-bank';
+            reorderAvailableWords.forEach((w, i) => {
+                const pill = document.createElement('div');
+                pill.className = 'word-pill';
+                pill.innerText = w;
+                pill.onclick = () => {
+                    reorderAvailableWords.splice(i, 1);
+                    reorderSelectedWords.push(w);
+                    renderReorderUI(container);
+                };
+                wordBank.appendChild(pill);
+            });
+
+            wrap.appendChild(answerBank);
+            wrap.appendChild(wordBank);
+            container.appendChild(wrap);
+        }
+
+        /* ================= XỬ LÝ LOGIC KIỂM TRA ĐÁP ÁN ================= */
+        function normalizeString(str) {
+            return str.toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+
+        function checkAnswer() {
+            const q = questionsData[currentIndex];
+            let userAnswer = "";
+            let isCorrect = false;
+
+            if (q.type === 'mcq') {
+                userAnswer = selectedOption;
+                if(!userAnswer) return alert("Con hãy chọn 1 đáp án nhé!");
+                isCorrect = (userAnswer === q.correct);
+            } 
+            else if (q.type === 'fill') {
+                userAnswer = document.getElementById('fill-answer-input').value.trim();
+                if(!userAnswer) return alert("Con hãy gõ chữ vào ô trống nhé!");
+                isCorrect = normalizeString(userAnswer) === normalizeString(q.correct);
+            } 
+            else if (q.type === 'reorder') {
+                userAnswer = reorderSelectedWords.join(" ");
+                if(reorderSelectedWords.length !== q.words.length) return alert("Con hãy xếp hết tất cả các từ nhé!");
+                // So sánh bỏ qua hoa thường và ký tự đặc biệt
+                isCorrect = normalizeString(userAnswer) === normalizeString(q.correct);
+            }
+
+            if (isCorrect) {
+                // Đánh dấu hoàn thành
+                if (!wrongAttemptsData[currentIndex]) {
+                    progressData[currentIndex] = 'correct_first_try';
+                } else {
+                    progressData[currentIndex] = 'correct_retry';
+                }
+                
+                showFeedback(true, q.explanation);
+                
+                // Đổi nút
+                document.getElementById('btn-submit').style.display = 'none';
+                document.getElementById('btn-next').style.display = 'block';
+                
+                // Khoá UI (Render lại)
+                renderQuestion(currentIndex);
+            } else {
+                // Ghi nhận lỗi sai
+                if(!wrongAttemptsData[currentIndex]) wrongAttemptsData[currentIndex] = [];
+                if(!wrongAttemptsData[currentIndex].includes(userAnswer)) {
+                    wrongAttemptsData[currentIndex].push(userAnswer);
+                }
+                showFeedback(false, q.explanation);
+            }
+        }
+
+        function showFeedback(isCorrect, explanation) {
+            const overlay = document.getElementById('popup-overlay');
+            const box = document.getElementById('popup-box');
+            
+            box.className = 'popup ' + (isCorrect ? 'correct' : 'wrong');
+            document.getElementById('popup-icon').innerText = isCorrect ? '🎉' : '❌';
+            document.getElementById('popup-title').innerText = isCorrect ? 'Hoàn toàn chính xác!' : 'Sai mất rồi!';
+            
+            let msg = explanation + "<br><br>";
+            if (!isCorrect) msg += "<i>Hãy đọc kỹ lý thuyết bên dưới và làm lại nhé!</i>";
+            document.getElementById('popup-message').innerHTML = msg;
+
+            document.getElementById('popup-btn').innerText = isCorrect ? 'Câu tiếp theo' : 'Làm lại';
+            document.getElementById('popup-btn').onclick = () => {
+                overlay.classList.remove('show');
+                if(isCorrect) nextQuestion();
+            };
+
+            overlay.classList.add('show');
+        }
+
+        function closePopup() {
+            document.getElementById('popup-overlay').classList.remove('show');
+        }
+
+        /* ================= ĐIỀU HƯỚNG ================= */
+        function jumpToQuestion(index) {
+            renderQuestion(parseInt(index));
+        }
+
+        function nextQuestion() {
+            // Tìm câu chưa làm gần nhất
+            let nextIndex = -1;
+            for(let i = currentIndex + 1; i < questionsData.length; i++) {
+                if(progressData[i] === 'unanswered') { nextIndex = i; break; }
+            }
+            // Nếu cuối mảng chưa thấy, vòng lại từ đầu
+            if (nextIndex === -1) {
+                for(let i = 0; i < currentIndex; i++) {
+                    if(progressData[i] === 'unanswered') { nextIndex = i; break; }
+                }
+            }
+
+            if (nextIndex !== -1) {
+                renderQuestion(nextIndex);
+            } else {
+                updateProgressUI(); // Sẽ hiện nút Xem báo cáo
+            }
+        }
+
+        /* ================= BÁO CÁO KẾT QUẢ ================= */
+        function showReport() {
+            document.getElementById('screen-app').classList.remove('active');
+            document.getElementById('screen-result').classList.add('active');
+
+            document.getElementById('report-name').innerText = `Học sinh: ${studentName}`;
+            
+            const total = questionsData.length;
+            const firstTry = progressData.filter(p => p === 'correct_first_try').length;
+            const needsReview = progressData.filter(p => p === 'correct_retry').length;
+
+            document.getElementById('stat-total').innerText = `${total}/${total}`;
+            document.getElementById('stat-first-try').innerText = firstTry;
+            document.getElementById('stat-wrong').innerText = needsReview;
+
+            const tbody = document.getElementById('report-table-body');
+            tbody.innerHTML = '';
+
+            questionsData.forEach((q, index) => {
+                const tr = document.createElement('tr');
+                
+                // STT
+                const tdSTT = document.createElement('td');
+                tdSTT.innerText = index + 1;
+                tr.appendChild(tdSTT);
+
+                // Câu hỏi
+                const tdQ = document.createElement('td');
+                // Loại bỏ html tags để hiển thị text thuần
+                tdQ.innerText = q.question ? q.question.replace(/<[^>]*>?/gm, '') : `[Sắp xếp] ${q.words.join(" ")}`;
+                tr.appendChild(tdQ);
+
+                // Sai
+                const tdWrong = document.createElement('td');
+                if (wrongAttemptsData[index] && wrongAttemptsData[index].length > 0) {
+                    tdWrong.className = 'text-danger';
+                    tdWrong.innerText = wrongAttemptsData[index].join(" | ");
+                } else {
+                    tdWrong.innerText = "-";
+                }
+                tr.appendChild(tdWrong);
+
+                // Đúng
+                const tdCorrect = document.createElement('td');
+                tdCorrect.className = 'text-success';
+                tdCorrect.innerText = q.correct;
+                tr.appendChild(tdCorrect);
+
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
